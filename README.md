@@ -19,3 +19,8 @@ The following ports are available:
  * [Python (with Puka)](./python-puka)
  * [Ruby (with Bunny)](./ruby)
  * [Ruby (with amqp gem)](./ruby-amqp)
+=======
+rabbitruby
+==========
+
+Test RabbitMQ with ruby
