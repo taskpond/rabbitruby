@@ -3,22 +3,30 @@
 
 require "amqp"
 
-AMQP.start(:host => "localhost") do |connection|
-  channel  = AMQP::Channel.new(connection)
-  exchange = channel.fanout("logs")
-  queue    = channel.queue("", :exclusive => true)
+EventMachine.run do 
+  # AMQP.start(:host => "172.18.1.187", :user => "pond", :pass => "1234") do |connection|
+  AMQP.start(:host => "172.18.1.187", :user => "pond", :pass => "1234") do |connection|
+    channel  = AMQP::Channel.new(connection)
+    exchange = channel.fanout("NotificationExchange", :durable => true)
+    queue    = channel.queue("NotificationQueue", :durable => true, :auto_delete => false)
 
-  queue.bind(exchange)
+    queue.bind(exchange)
 
-  Signal.trap("INT") do
-    connection.close do
-      EM.stop { exit }
+    Signal.trap("INT") do
+      connection.close do
+        EM.stop { exit }
+      end
     end
-  end
 
-  puts " [*] Waiting for logs. To exit press CTRL+C"
+    puts " [*] Waiting for Notification. To exit press CTRL+C"
+    
+    queue.subscribe do |body|
 
-  queue.subscribe do |body|
-    puts " [x] #{body}"
+      puts " [x] #{body}"
+      sleep 3.0
+      connection.close {
+        EventMachine.stop { exit }
+      }
+    end
   end
 end
